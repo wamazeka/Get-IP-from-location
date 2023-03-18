@@ -2,23 +2,24 @@ import csv
 import random
 import ipaddress
 
+
 class IPFaker:
 
     def __init__(self,
-                 blocksFile="GeoLite2-Country-Blocks-IPv4.csv",
-                 locationFile="GeoLite2-Country-Locations-en.csv") :
+                 blocksfile="GeoLite2-Country-Blocks-IPv4.csv",
+                 locationfile="GeoLite2-Country-Locations-en.csv"):
 
         self.countriesIPblocks = {}
         self.id2code = {}
 
-        with open("GeoLite2-Country-Locations-en.csv", "r") as f:
+        with open(locationfile, "r") as f:
             reader = csv.DictReader(f)
             next(reader)
             for row in reader:
                 self.id2code[row["geoname_id"]] = row["country_iso_code"]
                 self.countriesIPblocks[row["country_iso_code"]] = []
 
-        with open("GeoLite2-Country-Blocks-IPv4.csv", "r") as f:
+        with open(blocksfile, "r") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 try:
@@ -26,13 +27,21 @@ class IPFaker:
                 except:
                     pass
 
-
     def getip(self, country="ANY"):
         if country == "ANY":
             country = random.choice(list(self.countriesIPblocks.keys()))
 
         mask = ipaddress.IPv4Network(random.choice(self.countriesIPblocks[country]))
-        ip = random.choice(list(mask.hosts()))
+
+        network = int(mask.network_address)
+        broadcast = int(mask.broadcast_address)
+
+        if mask.prefixlen > 30:
+            randid = random.randint(network, broadcast)
+        else:
+            randid = random.randint(network + 1, broadcast - 1)
+
+        ip = mask._address_class(randid)
 
         return str(ip)
 
@@ -43,12 +52,9 @@ class IPFaker:
         return list
 
 
-
 if __name__ == '__main__':
     ipgetter = IPFaker()
 
     print(ipgetter.getip())
     print(ipgetter.getip(country='US'))
-    print(ipgetter.getiplist(country='IT', count=14))
-
-
+    print(ipgetter.getiplist(country='IT', count=9000))
