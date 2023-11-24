@@ -6,9 +6,9 @@ Easy to change for cities.
 
 ## Using
 
-1. Just download script
+1. Download script
 2. Download MaxMind CSV databases from their website or another way
-3. Use script
+3. Use class from script
 
 ```
 ipgetter = IPFaker()
